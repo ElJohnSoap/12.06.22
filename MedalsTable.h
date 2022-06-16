@@ -1,71 +1,44 @@
+﻿#pragma once
 #include "MedalRow.h"
-#include <cassert>
+#include <iostream>
+using namespace std;
+//enum typeMedals {Gold, Silver, Bronze};
 class MedalsTable
 {
-
+public:
+	static const int maxSize{ 10 };
 private:
-
-	int size = 0;// ������ ������� ��������
-	MedalRow* medalRows;	// ��������� ������ ��������
-	int findCountry(const char* country)const
-	{
-		for (int i{ 0 }; i < size; ++i)
-		{
-				if (strcmp(medalRows[i].getCountry(),
-					country) == 0)
-				{
-					return i;
-				}
-		}
-		return -1;
-	}
+	MedalRow* medalRows;
+	int size;
+	int findCountry(const char* country)const;
 
 public:
-	MedalsTable(int size) : size{ size }
-	{
-		if (this->size == 0)
-		{
-			medalRows = nullptr;
-		}
-		else
-		{
-			medalRows = new MedalRow[size];
-		}		
-	}
+	MedalsTable();
 
-	MedalsTable() : size{ 0 } {};
+	MedalsTable(MedalsTable&& object) //конструктор перемещения
+		: medalRows{ object.medalRows }, size{ object.size }
+	{
+		/* "отбираем" у исходного объекта право владения
+		блоком динамической памяти и устанавливаем
+		размер блока в 0 */
+		object.medalRows = nullptr;
+		object.size = 0;
+		cout << "Конструктор перемещения "
+			<< size << " elements, for " << this
+			<< '\n';
+	}
+	MedalsTable(const MedalsTable& object);// конструктор копирования
 
 
-	MedalRow& operator[](const char* country)
-	{
-		int idx{ findCountry(country) };
-		if (idx == -1)
-		{
-			assert(size < MedalsTable::size and
-				"Table is FULL!");
-			idx = size++;
-			medalRows[idx].setCountry(country);
-		}
-		return medalRows[idx];
-	}
-	const MedalRow& operator[](const char* country)const
-	{
-		int idx{ findCountry(country) };
-		assert(idx != -1 and "Country not found on const "
-			"table");
-		return medalRows[idx];
-	}
-	void print()const
-	{
-			for (int i{ 0 }; i < size; ++i)
-			{
-				medalRows[i].print();
-			}
-	}
-	~MedalsTable()
-	{
-		delete[]medalRows;
-	}
-	MedalsTable& add(const MedalRow);
+	MedalsTable& operator=(MedalsTable&& object); //оператор присваивания
+
+
+	~MedalsTable();
+	MedalRow& operator[](const char* country);
+	const MedalRow& operator[](const char* country)const;
+	void print()const;
+	friend ostream& operator<<(ostream& output, const MedalsTable& temp);//перегрузка cout
+	int operator()(const char* countryC);
+	friend void countryMedals(const MedalRow& temp);//пишет страну и каких медалей больше
+	
 };
-
